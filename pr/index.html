@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Data Attributes Processor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #333;
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 14px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .file-info {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .file-info.show {
+            display: flex;
+        }
+
+        .file-name {
+            color: #333;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            display: none;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .log-container.show {
+            display: block;
+        }
+
+        .log-line {
+            margin-bottom: 5px;
+            color: #d4d4d4;
+        }
+
+        .log-success {
+            color: #4ec9b0;
+        }
+
+        .log-error {
+            color: #f48771;
+        }
+
+        .log-info {
+            color: #9cdcfe;
+        }
+
+        .log-warning {
+            color: #dcdcaa;
+        }
+
+        .log-header {
+            color: #c586c0;
+            font-weight: bold;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .btn.show {
+            display: inline-block;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-reset {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-reset:hover {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        .stats {
+            display: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stats.show {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .footer {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            margin-top: 30px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .processing {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* Scrollbar styles */
+        .log-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .log-container::-webkit-scrollbar-track {
+            background: #2d2d2d;
+            border-radius: 10px;
+        }
+
+        .log-container::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 10px;
+        }
+
+        .log-container::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 SVG Data Attributes Processor</h1>
+        <p class="subtitle">Добавление data-id и data-name к SVG группам • Без сервера • Обработка в браузере</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">Перетащите SVG файл сюда</div>
+            <div class="upload-hint">или кликните для выбора файла</div>
+        </div>
+
+        <input type="file" id="fileInput" accept=".svg,image/svg+xml">
+
+        <div class="file-info" id="fileInfo">
+            <div class="file-name">
+                <span>📄</span>
+                <span id="fileName"></span>
+            </div>
+            <div class="file-size" id="fileSize"></div>
+        </div>
+
+        <div class="stats" id="stats">
+            <div style="font-weight: bold; font-size: 18px; margin-bottom: 10px;">📊 Результаты обработки</div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="statProcessed">0</div>
+                    <div class="stat-label">Обработано</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statSkipped">0</div>
+                    <div class="stat-label">Пропущено</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-label">Всего групп</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="log-container" id="logContainer"></div>
+
+        <div class="buttons">
+            <button class="btn btn-download" id="downloadBtn">💾 Скачать обработанный SVG</button>
+            <button class="btn btn-reset" id="resetBtn">🔄 Загрузить новый файл</button>
+        </div>
+
+        <div class="footer">
+            Создано для автоматизации обработки SVG файлов • Все данные обрабатываются локально в вашем браузере
+        </div>
+    </div>
+
+    <script>
+        let processedSvgContent = null;
+        let originalFileName = '';
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const logContainer = document.getElementById('logContainer');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const stats = document.getElementById('stats');
+
+        // Upload area click
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        });
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'image/svg+xml') {
+                handleFile(file);
+            } else {
+                alert('Пожалуйста, загрузите SVG файл');
+            }
+        });
+
+        // Download button
+        downloadBtn.addEventListener('click', () => {
+            if (processedSvgContent) {
+                downloadFile(processedSvgContent, originalFileName);
+            }
+        });
+
+        // Reset button
+        resetBtn.addEventListener('click', () => {
+            resetInterface();
+        });
+
+        function handleFile(file) {
+            originalFileName = file.name;
+            const sizeKB = (file.size / 1024).toFixed(2);
+            
+            fileName.textContent = file.name;
+            fileSize.textContent = `${sizeKB} KB`;
+            fileInfo.classList.add('show');
+
+            clearLog();
+            addLog('header', '═'.repeat(60));
+            addLog('info', `📄 Обработка файла: ${file.name}`);
+            addLog('header', '═'.repeat(60));
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                processSvg(e.target.result);
+            };
+            reader.onerror = () => {
+                addLog('error', '❌ Ошибка чтения файла');
+            };
+            reader.readAsText(file);
+        }
+
+        function processSvg(svgContent) {
+            try {
+                const parser = new DOMParser();
+                const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
+                
+                // Check for parsing errors
+                const parserError = svgDoc.querySelector('parsererror');
+                if (parserError) {
+                    addLog('error', '❌ Ошибка парсинга SVG файла');
+                    return;
+                }
+
+                const svgRoot = svgDoc.documentElement;
+
+                // Find Слой_2 group or fallback to all top-level groups
+                let layer2 = null;
+                let useTopLevelGroups = false;
+                const allGroups = svgDoc.querySelectorAll('g');
+                
+                // First, try to find Слой_2 group
+                for (let group of allGroups) {
+                    if (group.getAttribute('id') === 'Слой_2' || 
+                        group.getAttribute('data-name') === 'Слой 2') {
+                        layer2 = group;
+                        break;
+                    }
+                }
+
+                // If Слой_2 not found, use all top-level groups (direct children of svg)
+                let topLevelGroups = [];
+                if (!layer2) {
+                    topLevelGroups = Array.from(svgRoot.children).filter(
+                        child => child.tagName === 'g'
+                    );
+                    
+                    if (topLevelGroups.length > 0) {
+                        useTopLevelGroups = true;
+                        addLog('info', `ℹ️  Группа "Слой_2" не найдена, обрабатываются все группы верхнего уровня (${topLevelGroups.length})`);
+                    } else {
+                        // If no top-level groups, use svg root itself
+                        layer2 = svgRoot;
+                        addLog('info', 'ℹ️  Группы верхнего уровня не найдены, используется корневой элемент SVG');
+                    }
+                } else {
+                    addLog('success', '✓ Найдена группа "Слой_2"');
+                }
+                
+                addLog('', '');
+
+                let processedCount = 0;
+                let skippedCount = 0;
+                let totalGroups = 0;
+
+                // Process groups - either from layer2 or from top-level groups
+                let groupsToProcess = [];
+                if (useTopLevelGroups) {
+                    // Collect all groups from all top-level groups (including the top-level groups themselves)
+                    for (let topGroup of topLevelGroups) {
+                        // Add the top-level group itself if it has an id
+                        if (topGroup.getAttribute('id')) {
+                            groupsToProcess.push(topGroup);
+                        }
+                        // Add all child groups
+                        const childGroups = topGroup.querySelectorAll('g');
+                        for (let childGroup of childGroups) {
+                            if (childGroup.getAttribute('id')) {
+                                groupsToProcess.push(childGroup);
+                            }
+                        }
+                    }
+                } else {
+                    // Process all child groups from layer2
+                    const childGroups = layer2.querySelectorAll('g');
+                    // Filter only groups with id
+                    groupsToProcess = Array.from(childGroups).filter(
+                        group => group.getAttribute('id')
+                    );
+                }
+                
+                for (let group of groupsToProcess) {
+                    const groupId = group.getAttribute('id');
+
+                    totalGroups++;
+                    
+                    const hasDataId = group.hasAttribute('data-id');
+                    const hasDataName = group.hasAttribute('data-name');
+                    
+                    if (hasDataId && hasDataName) {
+                        skippedCount++;
+                        continue;
+                    }
+
+                    // Set data-id
+                    if (!hasDataId) {
+                        group.setAttribute('data-id', groupId);
+                    }
+
+                    // Set data-name
+                    if (!hasDataName) {
+                        const textElems = group.querySelectorAll('text');
+                        let dataName = groupId;
+                        
+                        // Собираем текст из всех текстовых элементов, включая те, что содержат только цифры
+                        const textParts = [];
+                        for (let textElem of textElems) {
+                            const text = textElem.textContent.trim();
+                            if (text) {
+                                textParts.push(text);
+                            }
+                        }
+                        
+                        if (textParts.length > 0) {
+                            dataName = textParts.join(' ');
+                            addLog('success', `  ✓ ${groupId.padEnd(20)} → data-name: "${dataName}"`);
+                        } else {
+                            addLog('warning', `  ✓ ${groupId.padEnd(20)} → data-name: "${dataName}" (текст не найден)`);
+                        }
+                        
+                        group.setAttribute('data-name', dataName);
+                    }
+                    
+                    processedCount++;
+                }
+
+                // Serialize back to string
+                const serializer = new XMLSerializer();
+                processedSvgContent = serializer.serializeToString(svgDoc);
+
+                // Show results
+                addLog('', '');
+                addLog('header', '═'.repeat(60));
+                
+                if (processedCount > 0) {
+                    addLog('success', '✅ Файл успешно обработан!');
+                    addLog('info', `   Обработано групп: ${processedCount}`);
+                    addLog('info', `   Пропущено (уже есть атрибуты): ${skippedCount}`);
+                    addLog('info', `   Всего групп: ${totalGroups}`);
+                } else {
+                    addLog('info', 'ℹ️  Все группы уже имеют необходимые атрибуты');
+                    addLog('info', `   Пропущено групп: ${skippedCount}`);
+                    addLog('info', `   Всего групп: ${totalGroups}`);
+                }
+                
+                addLog('header', '═'.repeat(60));
+
+                // Update stats
+                document.getElementById('statProcessed').textContent = processedCount;
+                document.getElementById('statSkipped').textContent = skippedCount;
+                document.getElementById('statTotal').textContent = totalGroups;
+                stats.classList.add('show');
+
+                // Show download button
+                downloadBtn.classList.add('show');
+                resetBtn.classList.add('show');
+
+            } catch (error) {
+                addLog('error', `❌ Ошибка при обработке: ${error.message}`);
+                console.error(error);
+            }
+        }
+
+        function addLog(type, message) {
+            logContainer.classList.add('show');
+            const line = document.createElement('div');
+            line.className = `log-line log-${type}`;
+            line.textContent = message;
+            logContainer.appendChild(line);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLog() {
+            logContainer.innerHTML = '';
+        }
+
+        function downloadFile(content, filename) {
+            const blob = new Blob([content], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename.replace('.svg', '_processed.svg');
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            addLog('', '');
+            addLog('success', `💾 Файл скачан: ${a.download}`);
+        }
+
+        function resetInterface() {
+            processedSvgContent = null;
+            originalFileName = '';
+            fileInput.value = '';
+            fileInfo.classList.remove('show');
+            logContainer.classList.remove('show');
+            downloadBtn.classList.remove('show');
+            resetBtn.classList.remove('show');
+            stats.classList.remove('show');
+            clearLog();
+        }
+    </script>
+</body>
+</html>
+
+

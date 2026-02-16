@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Правила для отрисовки схем</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+        .rule {
+            margin-bottom: 25px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+        }
+        .rule-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        .rule-description {
+            color: #555;
+            margin-left: 10px;
+        }
+        .section {
+            margin-top: 30px;
+        }
+        .section-title {
+            font-size: 1.2em;
+            color: #27ae60;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Правила для отрисовки схем</h1>
+        
+        <div class="section">
+            <div class="section-title">В слоях в иллюстраторе:</div>
+            
+            <div class="rule">
+                <div class="rule-description">
+                    Если название сектора начинается с цифры, вначале надо поставить букву «s». Название сектора обязательно должно начинаться с буквы.
+                </div>
+            </div>
+            
+            <div class="rule">
+                <div class="rule-description">
+                    В название сектора могут быть только латинские буквы, цифры, дефис «-», нижнее подчеркивание «_». Нельзя использовать другие символы и пробелы.
+                </div>
+            </div>
+            
+            <div class="rule">
+                <div class="rule-description">
+                    Названия не должны повторяться. Если в схеме такие сектора есть, дублёрам надо присваивать логические атрибуты: left, right, top, up, bottom, down, 2, 3 и тд.
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">На схеме в иллюстраторе:</div>
+            
+            <div class="rule">
+                <div class="rule-description">
+                    Нельзя использовать переносы строк. Если в названии несколько строчек, каждую строчку надо делать отдельным слоем внутри сектора.
+                </div>
+            </div>
+            
+            <div class="rule">
+                <div class="rule-description">
+                    Для всего текста на схеме необходимо выставлять трекинг «0».
+                </div>
+            </div>
+            
+            <div class="rule">
+                <div class="rule-description">
+                    Необходимо все эллипсы преобразовывать в контуры
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">Для секторатора:</div>
+            
+            <div class="rule">
+                <div class="rule-description">
+                    При сохранении сектора, его название должно совпадать с названием сектора в слоях в иллюстраторе
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
